@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1E6F62">
+<title>دفتر مصاريف الجمعية</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#E7EBE4;
+    --card:#FBFCF9;
+    --ink:#16231C;
+    --ink-soft:#5E6C63;
+    --line:#CDD5CB;
+    --brass:#A9742A;
+    --teal:#1E6F62;
+    --clay:#8C3A2B;
+    --plum:#5B4A7A;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans Arabic","Noto Naskh Arabic","Segoe UI",Tahoma,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-text-size-adjust:100%;
+  }
+  h1,h2,h3{font-family:"Noto Kufi Arabic","IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif}
+  .num{font-family:"Noto Kufi Arabic","IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em;unicode-bidi:isolate}
+  input[type=number],input[type=date]{direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 64px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  header h1{font-size:1.35rem;font-weight:700;margin:0;letter-spacing:-.01em}
+  .whoami{font-size:.85rem;color:var(--ink-soft)}
+  .whoami button{background:none;border:none;color:var(--brass);font:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+  .connbadge{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--ink-soft)}
+  .connbadge .dot{width:7px;height:7px;border-radius:50%;background:#9AA9A2}
+  .connbadge.live .dot{background:var(--teal)}
+
+  .ticket{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius) var(--radius) 0 0;
+    padding:26px 22px 22px;
+    position:relative;
+  }
+  .ticket .label{font-size:.85rem;color:var(--ink-soft);margin:0 0 4px}
+  .ticket .total{font-size:clamp(2.4rem,11vw,3.4rem);font-weight:700;line-height:1;margin:0}
+  .ticket .total .cur{font-size:.36em;font-weight:500;color:var(--ink-soft);margin-inline-start:.4em}
+  .ticket .meta{margin:10px 0 0;font-size:.85rem;color:var(--ink-soft)}
+  .perf{
+    height:14px;
+    background:
+      radial-gradient(circle at 7px 0, var(--paper) 6px, transparent 6.5px) repeat-x;
+    background-size:18px 14px;
+    border-inline:1px solid transparent;
+    margin-bottom:22px;
+    filter:drop-shadow(0 1px 0 var(--line));
+  }
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  section{margin-bottom:22px}
+  h2{font-size:1rem;font-weight:700;margin:0 0 12px}
+
+  label{display:block;font-size:.85rem;color:var(--ink-soft);margin-bottom:5px}
+  input,select,textarea{
+    width:100%;font:inherit;color:var(--ink);background:#fff;
+    border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+  }
+  input:focus,select:focus,button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row > div{flex:1 1 150px;min-width:0}
+  .field{margin-bottom:12px}
+
+  button.primary{
+    background:var(--teal);color:#fff;border:none;border-radius:8px;
+    font:inherit;font-weight:600;padding:12px 20px;cursor:pointer;
+  }
+  button.primary:hover{background:#18594e}
+  button.primary:disabled{background:#9AA9A2;cursor:not-allowed}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    border:1px solid var(--line);background:#fff;border-radius:999px;
+    padding:7px 14px;font:inherit;font-size:.9rem;cursor:pointer;color:var(--ink);
+  }
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .bars{display:grid;gap:10px}
+  .bar-row{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:baseline}
+  .bar-row .name{font-size:.92rem}
+  .bar-row .val{font-size:.92rem;font-weight:600}
+  .track{grid-column:1/-1;height:7px;background:#E3E7E0;border-radius:4px;overflow:hidden}
+  .track span{display:block;height:100%;border-radius:4px}
+
+  .daygroup{margin-bottom:18px}
+  .daygroup h3{font-size:.82rem;font-weight:500;color:var(--ink-soft);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .entry{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:9px 0}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .entry .what{font-weight:500;min-width:0;overflow-wrap:anywhere}
+  .entry .who{grid-column:2;font-size:.8rem;color:var(--ink-soft);margin-top:-4px}
+  .entry .amt{font-weight:600;white-space:nowrap}
+  .entry .del{grid-row:1/3;background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:1.1rem;line-height:1;padding:4px 6px;border-radius:6px}
+  .entry .del:hover{color:var(--clay);background:#F2E8E5}
+
+  .workday-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  .workday-row:last-child{border-bottom:none}
+  .workday-row .what{font-weight:500;min-width:0;overflow-wrap:anywhere}
+  .workday-row .who{grid-column:1/2;font-size:.8rem;color:var(--ink-soft)}
+  .workday-row .del{grid-row:1/3;background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:1.1rem;line-height:1;padding:4px 6px;border-radius:6px}
+  .workday-row .del:hover{color:var(--clay);background:#F2E8E5}
+
+  .empty{color:var(--ink-soft);font-size:.92rem;margin:0}
+  .note{font-size:.8rem;color:var(--ink-soft);margin:10px 0 0}
+  .banner{background:#F5EADB;border:1px solid #E0C89A;color:#6B4A15;border-radius:8px;padding:10px 14px;font-size:.88rem;margin-bottom:16px}
+  .banner.setup{background:#EAF1EE;border-color:#B9CFC6;color:#1A4A3D}
+  .banner code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;font-size:.85em}
+  .hidden{display:none !important}
+  .filterbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+  .filterbar select{width:auto}
+  footer{text-align:center;color:var(--ink-soft);font-size:.78rem;margin-top:30px}
+  @media (prefers-reduced-motion:no-preference){
+    .track span{transition:width .35s ease}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>دفتر مصاريف الجمعية</h1>
+    <div class="whoami" id="whoami"></div>
+  </header>
+
+  <div id="errBanner" class="banner hidden"></div>
+
+  <!-- بانر الإعداد الأولي: يظهر فقط إن لم تُضبط مفاتيح Firebase بعد -->
+  <div id="setupBanner" class="banner setup hidden">
+    هذا التطبيق يحتاج ربطًا بمشروع Firebase مجاني ليعمل بمشاركة حقيقية بين الأعضاء.
+    افتح ملف <code>index.html</code> وضع بيانات مشروعك في المتغيّر <code>firebaseConfig</code> أعلى الكود، بعد إنشاء مشروع على
+    <code>console.firebase.google.com</code> وتفعيل Firestore.
+  </div>
+
+  <!-- تسجيل الاسم -->
+  <section id="gate" class="card hidden">
+    <h2>من أنت؟</h2>
+    <p class="empty">اكتب اسمك مرة واحدة فقط. سيظهر بجانب كل مصروف تسجّله، حتى يعرف الجميع من دفع.</p>
+    <div class="field" style="margin-top:12px"><input id="nameInput" placeholder="مثال: عمّار" maxlength="24" autocomplete="name"></div>
+    <button class="primary" id="saveName">حفظ الاسم</button>
+  </section>
+
+  <div id="app" class="hidden">
+
+    <!-- المجموع -->
+    <section style="margin-bottom:0">
+      <div class="ticket">
+        <p class="label" id="totalLabel">مجموع المصاريف</p>
+        <p class="total num"><span id="totalVal">0</span><span class="cur">دج</span></p>
+        <p class="meta" id="totalMeta">لا توجد عمليات بعد</p>
+      </div>
+      <div class="perf"></div>
+    </section>
+
+    <!-- إضافة مصروف -->
+    <section>
+      <div class="card">
+        <h2>تسجيل مصروف</h2>
+        <div class="row">
+          <div class="field"><label for="amount">المبلغ بالدينار</label><input id="amount" type="number" inputmode="decimal" min="0" step="1" placeholder="1500"></div>
+          <div class="field"><label for="date">التاريخ</label><input id="date" type="date"></div>
+        </div>
+        <div class="field"><label for="desc">على ماذا؟</label><input id="desc" placeholder="مثال: خبز وماء للاجتماع" maxlength="80"></div>
+        <div class="field">
+          <label>الفئة</label>
+          <div class="chips" id="catChips"></div>
+        </div>
+        <button class="primary" id="addBtn">إضافة إلى الدفتر</button>
+        <p class="note" id="addNote"></p>
+      </div>
+    </section>
+
+    <!-- التقسيم -->
+    <section>
+      <div class="filterbar">
+        <h2 style="margin:0">التفصيل</h2>
+        <select id="monthFilter" aria-label="اختيار الشهر"></select>
+      </div>
+      <div class="card">
+        <div class="bars" id="catBars"></div>
+        <div style="height:18px"></div>
+        <h2>حسب العضو</h2>
+        <div class="bars" id="memberBars"></div>
+      </div>
+    </section>
+
+    <!-- أيام العمل -->
+    <section>
+      <div class="card">
+        <h2>تسجيل يوم عمل</h2>
+        <div class="row">
+          <div class="field"><label for="wdate">التاريخ</label><input id="wdate" type="date"></div>
+        </div>
+        <div class="field"><label for="wdesc">ماذا فعلتم؟</label><input id="wdesc" placeholder="مثال: تنظيف المقر وترتيب الأثاث" maxlength="100"></div>
+        <button class="primary" id="addWorkBtn">تسجيل اليوم</button>
+        <p class="note" id="workNote"></p>
+      </div>
+    </section>
+
+    <section>
+      <h2>أيام العمل المسجّلة</h2>
+      <div class="card" id="workdays"></div>
+    </section>
+
+    <!-- السجل -->
+    <section>
+      <h2>كل العمليات</h2>
+      <div class="card" id="entries"></div>
+    </section>
+
+    <footer id="footNote">الدفتر مشترك — كل ما تسجّله هنا يراه باقي الأعضاء فورًا.</footer>
+  </div>
+</div>
+
+<script type="module">
+/* ============================================================
+   1) إعداد Firebase — ضع بيانات مشروعك هنا (من console.firebase.google.com)
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDXUbxOnQ4LQfWyxnpvpO_32uxCeZsH7_o",
+  authDomain: "daftar-jamiya.firebaseapp.com",
+  projectId: "daftar-jamiya",
+  storageBucket: "daftar-jamiya.firebasestorage.app",
+  messagingSenderId: "1046296234443",
+  appId: "1:1046296234443:web:bb500ffe8df2b841984e4e"
+};
+
+const CONFIG_READY = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('ضع_');
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, deleteDoc, doc,
+  onSnapshot, query, orderBy, enableIndexedDbPersistence
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+const CATS = [
+  { id:'food',   name:'أكل ومشروبات', color:'#A9742A' },
+  { id:'buy',    name:'مشتريات',      color:'#1E6F62' },
+  { id:'trans',  name:'نقل',          color:'#5B4A7A' },
+  { id:'rent',   name:'كراء وخدمات',  color:'#8C3A2B' },
+  { id:'other',  name:'أخرى',         color:'#6E7A72' },
+];
+const NAME_KEY = 'me:name';
+
+let entries = [];
+let workdays = [];
+let myName = '';
+let selectedCat = 'food';
+let monthFilter = 'all';
+
+const $ = id => document.getElementById(id);
+
+function fmt(n){
+  const s = Math.round(n).toLocaleString('en-US').replace(/,/g,'\u202F');
+  return '\u2066' + s + '\u2069';
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function showError(msg){ const b = $('errBanner'); b.textContent = msg; b.classList.remove('hidden'); }
+function clearError(){ $('errBanner').classList.add('hidden'); }
+function setConn(live){
+  const b = $('whoami');
+  // شارة الاتصال تُضاف بجانب الاسم في renderWhoami
+}
+
+/* ---------- Firebase ---------- */
+let db = null;
+let entriesCol, workdaysCol;
+
+function initFirebase(){
+  if(!CONFIG_READY) return false;
+  try{
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    entriesCol = collection(db, 'expenses');
+    workdaysCol = collection(db, 'workdays');
+    enableIndexedDbPersistence(db).catch(()=>{}); // يسمح بعمل offline بسيط، يتجاهل الخطأ إن فتح بعدة تبويبات
+    return true;
+  }catch(e){
+    showError('تعذّر الاتصال بقاعدة البيانات. تحقق من بيانات firebaseConfig.');
+    return false;
+  }
+}
+
+function listenEntries(){
+  onSnapshot(query(entriesCol, orderBy('date','desc')), snap=>{
+    entries = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    clearError();
+    renderAll();
+  }, err=>{
+    showError('انقطع الاتصال بقاعدة البيانات. سيُعاد المحاولة تلقائيًا.');
+  });
+}
+function listenWorkdays(){
+  onSnapshot(query(workdaysCol, orderBy('date','desc')), snap=>{
+    workdays = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    renderWorkdays();
+  }, err=>{});
+}
+
+/* ---------- الواجهة ---------- */
+
+function renderChips(){
+  const c = $('catChips');
+  c.innerHTML = '';
+  CATS.forEach(cat=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = cat.name;
+    b.setAttribute('aria-pressed', String(cat.id === selectedCat));
+    b.onclick = ()=>{ selectedCat = cat.id; renderChips(); };
+    c.appendChild(b);
+  });
+}
+
+function monthKey(d){ return d.slice(0,7); }
+function monthLabel(k){
+  const [y,m] = k.split('-');
+  const names = ['جانفي','فيفري','مارس','أفريل','ماي','جوان','جويلية','أوت','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return names[parseInt(m,10)-1] + ' ' + y;
+}
+
+function renderMonths(){
+  const sel = $('monthFilter');
+  const keys = [...new Set(entries.map(e=>monthKey(e.date)))].sort().reverse();
+  const prev = monthFilter;
+  sel.innerHTML = '<option value="all">كل الفترات</option>' +
+    keys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('');
+  sel.value = keys.includes(prev) || prev==='all' ? prev : 'all';
+  monthFilter = sel.value;
+}
+
+function visible(){
+  return monthFilter === 'all' ? entries : entries.filter(e=>monthKey(e.date)===monthFilter);
+}
+
+function renderTotal(){
+  const list = visible();
+  const sum = list.reduce((a,e)=>a+e.amount,0);
+  $('totalVal').textContent = fmt(sum);
+  $('totalLabel').textContent = monthFilter === 'all' ? 'مجموع المصاريف' : 'مصاريف ' + monthLabel(monthFilter);
+  $('totalMeta').textContent = list.length ? `${list.length} عملية مسجّلة` : 'لا توجد عمليات في هذه الفترة';
+}
+
+function renderBars(){
+  const list = visible();
+  const total = list.reduce((a,e)=>a+e.amount,0) || 1;
+
+  const catBox = $('catBars');
+  catBox.innerHTML = '';
+  CATS.forEach(cat=>{
+    const s = list.filter(e=>e.cat===cat.id).reduce((a,e)=>a+e.amount,0);
+    if(!s) return;
+    catBox.appendChild(barRow(cat.name, s, s/total*100, cat.color));
+  });
+  if(!catBox.children.length) catBox.innerHTML = '<p class="empty">لا شيء بعد.</p>';
+
+  const memBox = $('memberBars');
+  memBox.innerHTML = '';
+  const byMember = {};
+  list.forEach(e=>{ byMember[e.by] = (byMember[e.by]||0) + e.amount; });
+  Object.entries(byMember).sort((a,b)=>b[1]-a[1]).forEach(([name,s])=>{
+    memBox.appendChild(barRow(name, s, s/total*100, '#16231C'));
+  });
+  if(!memBox.children.length) memBox.innerHTML = '<p class="empty">لا شيء بعد.</p>';
+}
+
+function barRow(name, value, pct, color){
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  row.innerHTML = `<span class="name">${esc(name)}</span>
+    <span class="val num">${fmt(value)} دج</span>
+    <span class="track"><span style="width:${pct.toFixed(1)}%;background:${color}"></span></span>`;
+  return row;
+}
+
+function renderEntries(){
+  const box = $('entries');
+  const list = visible().slice().sort((a,b)=> a.date < b.date ? 1 : a.date > b.date ? -1 : (b.id||'').localeCompare(a.id||''));
+  if(!list.length){
+    box.innerHTML = '<p class="empty">الدفتر فارغ. سجّل أول مصروف من الأعلى.</p>';
+    return;
+  }
+  const groups = {};
+  list.forEach(e=>{ (groups[e.date] = groups[e.date] || []).push(e); });
+
+  box.innerHTML = '';
+  Object.keys(groups).sort().reverse().forEach(date=>{
+    const g = document.createElement('div');
+    g.className = 'daygroup';
+    const dayTotal = groups[date].reduce((a,e)=>a+e.amount,0);
+    const h = document.createElement('h3');
+    h.innerHTML = `<span style="float:left"><span class="num">${fmt(dayTotal)}</span> دج</span>${prettyDate(date)}`;
+    g.appendChild(h);
+    groups[date].forEach(e=>{
+      const cat = CATS.find(c=>c.id===e.cat) || CATS[4];
+      const row = document.createElement('div');
+      row.className = 'entry';
+      row.innerHTML = `
+        <span class="dot" style="background:${cat.color}"></span>
+        <span class="what">${esc(e.desc || cat.name)}</span>
+        <span class="amt num">${fmt(e.amount)} دج</span>
+        <span class="who">${esc(e.by)} · ${cat.name}</span>`;
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.title = 'حذف';
+      del.setAttribute('aria-label','حذف هذه العملية');
+      del.textContent = '×';
+      del.onclick = ()=>removeEntry(e.id, e.desc || cat.name);
+      row.appendChild(del);
+      g.appendChild(row);
+    });
+    box.appendChild(g);
+  });
+}
+
+function renderWorkdays(){
+  const box = $('workdays');
+  const list = workdays.slice().sort((a,b)=> a.date < b.date ? 1 : a.date > b.date ? -1 : (b.id||'').localeCompare(a.id||''));
+  if(!list.length){
+    box.innerHTML = '<p class="empty">لم يُسجَّل أي يوم عمل بعد.</p>';
+    return;
+  }
+  box.innerHTML = '';
+  list.forEach(w=>{
+    const row = document.createElement('div');
+    row.className = 'workday-row';
+    row.innerHTML = `
+      <span class="what">${esc(w.desc || 'يوم عمل')}</span>
+      <span class="who">${prettyDate(w.date)} · ${esc(w.by)}</span>`;
+    const del = document.createElement('button');
+    del.className = 'del';
+    del.title = 'حذف';
+    del.setAttribute('aria-label','حذف هذا اليوم');
+    del.textContent = '×';
+    del.onclick = ()=>removeWorkday(w.id, w.desc || 'يوم عمل');
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+
+function prettyDate(d){
+  const [y,m,day] = d.split('-');
+  const today = new Date().toISOString().slice(0,10);
+  if(d === today) return 'اليوم';
+  return `${parseInt(day,10)} ${monthLabel(y+'-'+m)}`;
+}
+
+function renderAll(){
+  renderMonths();
+  renderTotal();
+  renderBars();
+  renderEntries();
+}
+
+/* ---------- العمليات (Firestore) ---------- */
+
+async function addEntry(){
+  const amount = parseFloat($('amount').value);
+  const date = $('date').value;
+  const desc = $('desc').value.trim();
+  if(!amount || amount <= 0){ $('addNote').textContent = 'اكتب مبلغًا أكبر من صفر.'; $('amount').focus(); return; }
+  if(!date){ $('addNote').textContent = 'اختر التاريخ.'; return; }
+
+  const btn = $('addBtn');
+  btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+  $('addNote').textContent = '';
+
+  try{
+    await addDoc(entriesCol, { amount, date, desc, cat: selectedCat, by: myName, createdAt: Date.now() });
+    clearError();
+    $('amount').value = ''; $('desc').value = '';
+    $('addNote').textContent = 'تمت الإضافة.';
+    setTimeout(()=>{ $('addNote').textContent = ''; }, 2500);
+    $('amount').focus();
+  }catch(err){
+    showError('تعذّر حفظ العملية. تحقق من الاتصال وأعد المحاولة.');
+  }finally{
+    btn.disabled = false; btn.textContent = 'إضافة إلى الدفتر';
+  }
+}
+
+async function removeEntry(id, label){
+  if(!confirm(`حذف «${label}» من الدفتر؟`)) return;
+  try{
+    await deleteDoc(doc(db, 'expenses', id));
+    clearError();
+  }catch(err){
+    showError('تعذّر الحذف. أعد المحاولة.');
+  }
+}
+
+async function addWorkday(){
+  const date = $('wdate').value;
+  const desc = $('wdesc').value.trim();
+  if(!date){ $('workNote').textContent = 'اختر التاريخ.'; return; }
+
+  const btn = $('addWorkBtn');
+  btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+  $('workNote').textContent = '';
+
+  try{
+    await addDoc(workdaysCol, { date, desc, by: myName, createdAt: Date.now() });
+    clearError();
+    $('wdesc').value = '';
+    $('workNote').textContent = 'تم التسجيل.';
+    setTimeout(()=>{ $('workNote').textContent = ''; }, 2500);
+  }catch(err){
+    showError('تعذّر حفظ يوم العمل. تحقق من الاتصال وأعد المحاولة.');
+  }finally{
+    btn.disabled = false; btn.textContent = 'تسجيل اليوم';
+  }
+}
+
+async function removeWorkday(id, label){
+  if(!confirm(`حذف «${label}» من السجل؟`)) return;
+  try{
+    await deleteDoc(doc(db, 'workdays', id));
+    clearError();
+  }catch(err){
+    showError('تعذّر الحذف. أعد المحاولة.');
+  }
+}
+
+/* ---------- الاسم (محلي على كل جهاز) ---------- */
+
+function setName(){
+  const v = $('nameInput').value.trim();
+  if(!v){ $('nameInput').focus(); return; }
+  myName = v;
+  try{ localStorage.setItem(NAME_KEY, v); }catch(e){}
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  renderWhoami();
+}
+
+function renderWhoami(){
+  $('whoami').innerHTML = `تسجّل باسم <strong>${esc(myName)}</strong> — <button id="chgName">تغيير</button>`;
+  $('chgName').onclick = ()=>{
+    $('nameInput').value = myName;
+    $('gate').classList.remove('hidden');
+    $('app').classList.add('hidden');
+    $('nameInput').focus();
+  };
+}
+
+/* ---------- الإقلاع ---------- */
+
+function init(){
+  $('date').value = new Date().toISOString().slice(0,10);
+  $('wdate').value = new Date().toISOString().slice(0,10);
+  renderChips();
+  $('addBtn').onclick = addEntry;
+  $('addWorkBtn').onclick = addWorkday;
+  $('saveName').onclick = setName;
+  $('nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') setName(); });
+  $('desc').addEventListener('keydown', e=>{ if(e.key==='Enter') addEntry(); });
+  $('wdesc').addEventListener('keydown', e=>{ if(e.key==='Enter') addWorkday(); });
+  $('monthFilter').onchange = e=>{ monthFilter = e.target.value; renderTotal(); renderBars(); renderEntries(); };
+
+  if(!CONFIG_READY){
+    $('setupBanner').classList.remove('hidden');
+    return; // لا نكمل بدون إعداد Firebase حتى لا يفشل بصمت
+  }
+
+  if(!initFirebase()) return;
+  listenEntries();
+  listenWorkdays();
+
+  try{ myName = localStorage.getItem(NAME_KEY) || ''; }catch(e){ myName = ''; }
+
+  if(myName){
+    $('app').classList.remove('hidden');
+    renderWhoami();
+  }else{
+    $('gate').classList.remove('hidden');
+  }
+}
+init();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
