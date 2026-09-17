@@ -182,6 +182,7 @@
           <div class="field"><label for="amount">المبلغ بالدينار</label><input id="amount" type="number" inputmode="decimal" min="0" step="1" placeholder="1500"></div>
           <div class="field"><label for="date">التاريخ</label><input id="date" type="date"></div>
         </div>
+        <p class="note" id="dateHint" style="margin-top:-6px"></p>
         <div class="field"><label for="desc">على ماذا؟</label><input id="desc" placeholder="مثال: خبز وماء للاجتماع" maxlength="80"></div>
         <div class="field">
           <label>الفئة</label>
@@ -514,12 +515,26 @@ function prettyDate(d){
   return `${parseInt(day,10)} ${monthLabel(y+'-'+m)}`;
 }
 
+function updateDateHint(){
+  const d = $('date').value;
+  const hint = $('dateHint');
+  if(!d){ hint.textContent = ''; return; }
+  const list = entries.filter(e=>e.date===d);
+  if(!list.length){
+    hint.textContent = 'لا توجد مصاريف مسجّلة في ' + prettyDate(d) + ' حتى الآن.';
+    return;
+  }
+  const sum = list.reduce((a,e)=>a+e.amount,0);
+  hint.innerHTML = `مصاريف ${prettyDate(d)} حتى الآن: <span class="num">${fmt(sum)}</span> دج (${list.length} عملية)`;
+}
+
 function renderAll(){
   renderMonths();
   renderTotal();
   renderBars();
   renderDayTotals();
   renderEntries();
+  updateDateHint();
 }
 
 /* ---------- العمليات (Firestore) ---------- */
@@ -617,6 +632,7 @@ function renderWhoami(){
 
 function init(){
   $('date').value = new Date().toISOString().slice(0,10);
+  $('date').addEventListener('input', updateDateHint);
   $('wdate').value = new Date().toISOString().slice(0,10);
   renderChips();
   $('addBtn').onclick = addEntry;
