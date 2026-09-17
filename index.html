@@ -203,6 +203,9 @@
         <div style="height:18px"></div>
         <h2>حسب العضو</h2>
         <div class="bars" id="memberBars"></div>
+        <div style="height:18px"></div>
+        <h2>حسب اليوم</h2>
+        <div class="bars" id="dayBars"></div>
       </div>
     </section>
 
@@ -396,6 +399,21 @@ function barRow(name, value, pct, color){
   return row;
 }
 
+function renderDayTotals(){
+  const list = visible();
+  const total = list.reduce((a,e)=>a+e.amount,0) || 1;
+  const byDay = {};
+  list.forEach(e=>{ byDay[e.date] = (byDay[e.date]||0) + e.amount; });
+
+  const box = $('dayBars');
+  box.innerHTML = '';
+  Object.keys(byDay).sort().reverse().forEach(date=>{
+    const s = byDay[date];
+    box.appendChild(barRow(prettyDate(date), s, s/total*100, '#5B4A7A'));
+  });
+  if(!box.children.length) box.innerHTML = '<p class="empty">لا شيء بعد.</p>';
+}
+
 function renderEntries(){
   const box = $('entries');
   const list = visible().slice().sort((a,b)=> a.date < b.date ? 1 : a.date > b.date ? -1 : (b.id||'').localeCompare(a.id||''));
@@ -472,6 +490,7 @@ function renderAll(){
   renderMonths();
   renderTotal();
   renderBars();
+  renderDayTotals();
   renderEntries();
 }
 
@@ -578,7 +597,7 @@ function init(){
   $('nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') setName(); });
   $('desc').addEventListener('keydown', e=>{ if(e.key==='Enter') addEntry(); });
   $('wdesc').addEventListener('keydown', e=>{ if(e.key==='Enter') addWorkday(); });
-  $('monthFilter').onchange = e=>{ monthFilter = e.target.value; renderTotal(); renderBars(); renderEntries(); };
+  $('monthFilter').onchange = e=>{ monthFilter = e.target.value; renderTotal(); renderBars(); renderDayTotals(); renderEntries(); };
 
   if(!CONFIG_READY){
     $('setupBanner').classList.remove('hidden');
