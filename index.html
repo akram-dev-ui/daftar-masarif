@@ -198,13 +198,17 @@
         <h2 style="margin:0">التفصيل</h2>
         <select id="monthFilter" aria-label="اختيار الشهر"></select>
       </div>
+      <div id="dayFilterBar" class="hidden" style="display:flex;align-items:center;justify-content:space-between;background:#EAF1EE;border:1px solid #B9CFC6;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:.88rem;color:#1A4A3D">
+        <span id="dayFilterLabel"></span>
+        <button id="clearDayFilter" style="background:none;border:none;color:var(--teal);font:inherit;font-weight:600;cursor:pointer;padding:0">إظهار كل الأيام ×</button>
+      </div>
       <div class="card">
         <div class="bars" id="catBars"></div>
         <div style="height:18px"></div>
         <h2>حسب العضو</h2>
         <div class="bars" id="memberBars"></div>
         <div style="height:18px"></div>
-        <h2>حسب اليوم</h2>
+        <h2>حسب اليوم <span style="font-weight:400;color:var(--ink-soft);font-size:.8rem">(اضغط على يوم لعرضه وحده)</span></h2>
         <div class="bars" id="dayBars"></div>
       </div>
     </section>
@@ -272,6 +276,7 @@ let workdays = [];
 let myName = '';
 let selectedCat = 'food';
 let monthFilter = 'all';
+let dayFilter = '';
 
 const $ = id => document.getElementById(id);
 
@@ -356,6 +361,7 @@ function renderMonths(){
 }
 
 function visible(){
+  if(dayFilter) return entries.filter(e=>e.date===dayFilter);
   return monthFilter === 'all' ? entries : entries.filter(e=>monthKey(e.date)===monthFilter);
 }
 
@@ -363,8 +369,18 @@ function renderTotal(){
   const list = visible();
   const sum = list.reduce((a,e)=>a+e.amount,0);
   $('totalVal').textContent = fmt(sum);
-  $('totalLabel').textContent = monthFilter === 'all' ? 'مجموع المصاريف' : 'مصاريف ' + monthLabel(monthFilter);
+  $('totalLabel').textContent = dayFilter
+    ? 'مصاريف ' + prettyDate(dayFilter)
+    : (monthFilter === 'all' ? 'مجموع المصاريف' : 'مصاريف ' + monthLabel(monthFilter));
   $('totalMeta').textContent = list.length ? `${list.length} عملية مسجّلة` : 'لا توجد عمليات في هذه الفترة';
+
+  const bar = $('dayFilterBar');
+  if(dayFilter){
+    bar.classList.remove('hidden');
+    $('dayFilterLabel').textContent = 'تعرض الآن يوم: ' + prettyDate(dayFilter);
+  }else{
+    bar.classList.add('hidden');
+  }
 }
 
 function renderBars(){
@@ -399,8 +415,12 @@ function barRow(name, value, pct, color){
   return row;
 }
 
+function visibleByMonthOnly(){
+  return monthFilter === 'all' ? entries : entries.filter(e=>monthKey(e.date)===monthFilter);
+}
+
 function renderDayTotals(){
-  const list = visible();
+  const list = visibleByMonthOnly();
   const total = list.reduce((a,e)=>a+e.amount,0) || 1;
   const byDay = {};
   list.forEach(e=>{ byDay[e.date] = (byDay[e.date]||0) + e.amount; });
@@ -409,7 +429,15 @@ function renderDayTotals(){
   box.innerHTML = '';
   Object.keys(byDay).sort().reverse().forEach(date=>{
     const s = byDay[date];
-    box.appendChild(barRow(prettyDate(date), s, s/total*100, '#5B4A7A'));
+    const row = barRow(prettyDate(date), s, s/total*100, '#5B4A7A');
+    row.style.cursor = 'pointer';
+    row.setAttribute('role','button');
+    row.setAttribute('tabindex','0');
+    if(date === dayFilter) row.style.outline = '2px solid var(--teal)';
+    const activate = ()=>{ dayFilter = (dayFilter === date) ? '' : date; renderTotal(); renderBars(); renderDayTotals(); renderEntries(); };
+    row.onclick = activate;
+    row.onkeydown = e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); activate(); } };
+    box.appendChild(row);
   });
   if(!box.children.length) box.innerHTML = '<p class="empty">لا شيء بعد.</p>';
 }
@@ -597,7 +625,8 @@ function init(){
   $('nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') setName(); });
   $('desc').addEventListener('keydown', e=>{ if(e.key==='Enter') addEntry(); });
   $('wdesc').addEventListener('keydown', e=>{ if(e.key==='Enter') addWorkday(); });
-  $('monthFilter').onchange = e=>{ monthFilter = e.target.value; renderTotal(); renderBars(); renderDayTotals(); renderEntries(); };
+  $('monthFilter').onchange = e=>{ monthFilter = e.target.value; dayFilter=''; renderTotal(); renderBars(); renderDayTotals(); renderEntries(); };
+  $('clearDayFilter').onclick = ()=>{ dayFilter=''; renderTotal(); renderBars(); renderDayTotals(); renderEntries(); };
 
   if(!CONFIG_READY){
     $('setupBanner').classList.remove('hidden');
